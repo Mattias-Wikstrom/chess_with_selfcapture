@@ -237,8 +237,8 @@ Move* generate_all(const Position& pos, Move* moveList) {
     if (Type != EVASIONS || !more_than_one(pos.checkers()))
     {
         target = Type == EVASIONS     ? between_bb(ksq, lsb(pos.checkers()))
-               : Type == NON_EVASIONS ? ~pos.pieces(Us)
-               : Type == CAPTURES     ? pos.pieces(~Us)
+               : Type == NON_EVASIONS ? ~0
+               : Type == CAPTURES     ? pos.pieces()
                                       : ~pos.pieces();  // QUIETS
 
         moveList = generate_pawn_moves<Us, Type>(pos, moveList, target);

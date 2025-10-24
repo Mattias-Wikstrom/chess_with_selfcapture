@@ -572,6 +572,11 @@ bool Position::pseudo_legal(const Move m) const {
     Square to   = m.to_sq();
     Piece  pc   = moved_piece(m);
 
+    // Cannot capture a king (needed with self-capture chess to prevent capture of own king)
+    if (type_of(piece_on(to)) == KING) {
+        return false;
+    }
+
     // Use a slower but simpler function for uncommon cases
     // yet we skip the legality check of MoveList<LEGAL>().
     if (m.type_of() != NORMAL)
@@ -584,10 +589,6 @@ bool Position::pseudo_legal(const Move m) const {
     // If the 'from' square is not occupied by a piece belonging to the side to
     // move, the move is obviously not legal.
     if (pc == NO_PIECE || color_of(pc) != us)
-        return false;
-
-    // The destination square cannot be occupied by a friendly piece
-    if (pieces(us) & to)
         return false;
 
     // Handle the special case of a pawn move
@@ -726,7 +727,7 @@ DirtyPiece Position::do_move(Move                      m,
     dp.add_sq = SQ_NONE;
 
     assert(color_of(pc) == us);
-    assert(captured == NO_PIECE || color_of(captured) == (m.type_of() != CASTLING ? them : us));
+    // Not valid in self-capture chess: assert(captured == NO_PIECE || color_of(captured) == (m.type_of() != CASTLING ? them : us));
     assert(type_of(captured) != KING);
 
     if (m.type_of() == CASTLING)
@@ -764,8 +765,9 @@ DirtyPiece Position::do_move(Move                      m,
         }
         else
         {
-            st->nonPawnMaterial[them] -= PieceValue[captured];
-            st->nonPawnKey[them] ^= Zobrist::psq[captured][capsq];
+            auto color_of_captured = color_of(captured);
+            st->nonPawnMaterial[color_of_captured] -= PieceValue[captured];
+            st->nonPawnKey[color_of_captured] ^= Zobrist::psq[captured][capsq];
 
             if (type_of(captured) <= BISHOP)
                 st->minorPieceKey ^= Zobrist::psq[captured][capsq];
