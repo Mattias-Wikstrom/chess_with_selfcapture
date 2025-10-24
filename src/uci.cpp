@@ -119,6 +119,10 @@ void UCIEngine::loop() {
 
             sync_cout << "uciok" << sync_endl;
         }
+        
+        else if (token == "show_moves") {
+            sync_cout << engine.show_moves() << sync_endl;
+        }
 
         else if (token == "setoption")
             setoption(is);
@@ -250,6 +254,11 @@ void UCIEngine::bench(std::istream& args) {
         std::istringstream is(cmd);
         is >> std::skipws >> token;
 
+        if (token == "tst") {
+            std::cerr << "Tst: " << cnt++ << '/' << num << " (" << engine.fen() << ")"
+                      << std::endl;
+        }
+
         if (token == "go" || token == "eval")
         {
             std::cerr << "\nPosition: " << cnt++ << '/' << num << " (" << engine.fen() << ")"
@@ -352,6 +361,7 @@ void UCIEngine::benchmark(std::istream& args) {
         }
         else if (token == "position")
             position(is);
+
         else if (token == "ucinewgame")
         {
             engine.search_clear();  // search_clear may take a while

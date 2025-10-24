@@ -62,6 +62,8 @@ class Engine {
     // non blocking call to stop searching
     void stop();
 
+    std::string show_moves();
+
     // blocking call to wait for search to finish
     void wait_for_search_finished();
     // set a new position, moves are in UCI format

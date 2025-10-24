@@ -150,6 +150,9 @@ std::uint64_t Engine::perft(const std::string& fen, Depth depth, bool isChess960
     return Benchmark::perft(fen, depth, isChess960);
 }
 
+
+
+
 void Engine::go(Search::LimitsType& limits) {
     assert(limits.perft == 0);
     verify_networks();
@@ -157,6 +160,44 @@ void Engine::go(Search::LimitsType& limits) {
     threads.start_thinking(options, pos, states, limits);
 }
 void Engine::stop() { threads.stop = true; }
+
+template<GenType T>
+void printMoveList(std::ostream& out, const std::string& label, const Position& pos) {
+    out << label << ":\n";
+    int cnt = 0;
+    for (const auto& m : MoveList<T>(pos)) {
+        out << UCIEngine::move(m, pos.is_chess960()) << std::endl;
+        ++cnt;
+    }
+    out << "Count: " << cnt << std::endl << std::endl;
+}
+
+std::string Engine::show_moves() { 
+    std::ostringstream out;
+
+    out << "show_moves:\n\n";
+    
+    printMoveList<CAPTURES>(out, "CAPTURES", pos);
+    printMoveList<QUIETS>(out, "QUIETS", pos);
+    
+    if (pos.checkers()) {
+        printMoveList<EVASIONS>(out, "EVASIONS", pos);
+        printMoveList<NON_EVASIONS>(out, "NON_EVASIONS", pos);
+    }
+
+    printMoveList<LEGAL>(out, "LEGAL", pos);
+
+    out << "nonPawnKey[WHITE]:" << pos.state()->nonPawnKey[WHITE] << std::endl;
+    out << "nonPawnMaterial[WHITE]:" << pos.state()->nonPawnMaterial[WHITE] << std::endl;
+    out << "nonPawnKey[BLACK]:" << pos.state()->nonPawnKey[BLACK] << std::endl;
+    out << "nonPawnMaterial[BLACK]:" << pos.state()->nonPawnMaterial[BLACK] << std::endl;
+
+    return out.str().c_str();
+}
+
+
+
+
 
 void Engine::search_clear() {
     wait_for_search_finished();
