@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/pieces/wp.png</file>
+        <file>resources/pieces/wn.png</file>
+        <file>resources/pieces/wb.png</file>
+        <file>resources/pieces/wr.png</file>
+        <file>resources/pieces/wq.png</file>
+        <file>resources/pieces/wk.png</file>
+        <file>resources/pieces/bp.png</file>
+        <file>resources/pieces/bn.png</file>
+        <file>resources/pieces/bb.png</file>
+        <file>resources/pieces/br.png</file>
+        <file>resources/pieces/bq.png</file>
+        <file>resources/pieces/bk.png</file>
+    </qresource>
+</RCC>
