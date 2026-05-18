@@ -42,6 +42,15 @@ void ChessBoard::newGame() {
         QTimer::singleShot(200, this, &ChessBoard::triggerEngineMove);
 }
 
+void ChessBoard::setPositionFromFen(const QString &fen) {
+    engineThinking = false;
+    engine.setPosition(fen.toStdString());
+    syncBoardWithEngine();
+    update();
+    if (vsEngine && engine.sideToMove() != humanColor)
+        QTimer::singleShot(200, this, &ChessBoard::triggerEngineMove);
+}
+
 void ChessBoard::setVsEngine(bool enabled, const QString &enginePath) {
     vsEngine = enabled;
     if (enabled) {

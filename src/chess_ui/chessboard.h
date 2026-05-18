@@ -44,6 +44,7 @@ public:
     ~ChessBoard();
     void initializeBoard();
     void newGame();
+    void setPositionFromFen(const QString &fen);
 
     // Engine opponent
     void setVsEngine(bool enabled, const QString &enginePath = QString());
