@@ -1,0 +1,51 @@
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  width: min(80vmin, 560px);
+  height: min(80vmin, 560px);
+  border: 2px solid #5d4037;
+  user-select: none;
+}
+
+.square {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.light {
+  background-color: #f0d9b5;
+}
+
+.dark {
+  background-color: #b58863;
+}
+
+.selected {
+  background-color: #7fc97f !important;
+}
+
+.target {
+  background-color: #7fc97faa !important;
+}
+
+.lastMove {
+  background-color: #cdd26a !important;
+}
+
+.piece {
+  width: 88%;
+  height: 88%;
+  pointer-events: none;
+  filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.4));
+}
+
+.dot {
+  width: 30%;
+  height: 30%;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 50%;
+}

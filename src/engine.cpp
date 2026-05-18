@@ -145,7 +145,9 @@ Engine::Engine(std::optional<std::string> path) :
 }
 
 std::uint64_t Engine::perft(const std::string& fen, Depth depth, bool isChess960) {
+#ifndef __EMSCRIPTEN__
     verify_networks();
+#endif
 
     return Benchmark::perft(fen, depth, isChess960);
 }
@@ -155,7 +157,9 @@ std::uint64_t Engine::perft(const std::string& fen, Depth depth, bool isChess960
 
 void Engine::go(Search::LimitsType& limits) {
     assert(limits.perft == 0);
+#ifndef __EMSCRIPTEN__
     verify_networks();
+#endif
 
     threads.start_thinking(options, pos, states, limits);
 }

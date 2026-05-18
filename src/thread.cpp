@@ -44,10 +44,16 @@ Thread::Thread(Search::SharedState&                    sharedState,
                size_t                                  n,
                OptionalThreadToNumaNodeBinder          binder) :
     idx(n),
-    nthreads(sharedState.options["Threads"]),
-    stdThread(&Thread::idle_loop, this) {
+    nthreads(sharedState.options["Threads"])
+#ifndef __EMSCRIPTEN__
+    ,
+    stdThread(&Thread::idle_loop, this)
+#endif
+{
 
+#ifndef __EMSCRIPTEN__
     wait_for_search_finished();
+#endif
 
     run_custom_job([this, &binder, &sharedState, &sm, n]() {
         // Use the binder to [maybe] bind the threads to a NUMA node before doing
@@ -58,7 +64,9 @@ Thread::Thread(Search::SharedState&                    sharedState,
                                                               this->numaAccessToken);
     });
 
+#ifndef __EMSCRIPTEN__
     wait_for_search_finished();
+#endif
 }
 
 
@@ -68,15 +76,21 @@ Thread::~Thread() {
 
     assert(!searching);
 
+#ifndef __EMSCRIPTEN__
     exit = true;
     start_searching();
     stdThread.join();
+#endif
 }
 
 // Wakes up the thread that will start the search
 void Thread::start_searching() {
     assert(worker != nullptr);
+#ifdef __EMSCRIPTEN__
+    worker->start_searching();
+#else
     run_custom_job([this]() { worker->start_searching(); });
+#endif
 }
 
 // Clears the histories for the thread worker (usually before a new game)
@@ -87,13 +101,19 @@ void Thread::clear_worker() {
 
 // Blocks on the condition variable until the thread has finished searching
 void Thread::wait_for_search_finished() {
-
+#ifndef __EMSCRIPTEN__
     std::unique_lock<std::mutex> lk(mutex);
     cv.wait(lk, [&] { return !searching; });
+#endif
 }
 
 // Launching a function in the thread
 void Thread::run_custom_job(std::function<void()> f) {
+#ifdef __EMSCRIPTEN__
+    // No real thread — run immediately on the calling thread.
+    searching = false;
+    f();
+#else
     {
         std::unique_lock<std::mutex> lk(mutex);
         cv.wait(lk, [&] { return !searching; });
@@ -101,6 +121,7 @@ void Thread::run_custom_job(std::function<void()> f) {
         searching = true;
     }
     cv.notify_one();
+#endif
 }
 
 void Thread::ensure_network_replicated() { worker->ensure_network_replicated(); }

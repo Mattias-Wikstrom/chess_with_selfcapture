@@ -102,7 +102,9 @@ class Thread {
     std::condition_variable   cv;
     size_t                    idx, nthreads;
     bool                      exit = false, searching = true;  // Set before starting std::thread
+#ifndef __EMSCRIPTEN__
     NativeThread              stdThread;
+#endif
     NumaReplicatedAccessToken numaAccessToken;
 };
 
