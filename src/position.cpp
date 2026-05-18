@@ -599,7 +599,8 @@ bool Position::pseudo_legal(const Move m) const {
             return false;
 
         // Check if it's a valid capture, single push, or double push
-        const bool isCapture    = bool(attacks_bb<PAWN>(from, us) & pieces(~us) & to);
+        // Self-capture chess: pawns can capture any occupied square (except the king, already checked above)
+        const bool isCapture    = bool(attacks_bb<PAWN>(from, us) & pieces() & to);
         const bool isSinglePush = (from + pawn_push(us) == to) && empty(to);
         const bool isDoublePush = (from + 2 * pawn_push(us) == to)
                                && (relative_rank(us, from) == RANK_2) && empty(to)
@@ -1108,6 +1109,10 @@ bool Position::see_ge(Move m, int threshold) const {
     Square from = m.from_sq(), to = m.to_sq();
 
     assert(piece_on(from) != NO_PIECE);
+
+    // Self-captures lose the captured piece for no gain
+    if (!empty(to) && color_of(piece_on(to)) == sideToMove)
+        return -PieceValue[piece_on(to)] >= threshold;
 
     int swap = PieceValue[piece_on(to)] - threshold;
     if (swap < 0)

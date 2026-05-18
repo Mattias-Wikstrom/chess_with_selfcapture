@@ -135,7 +135,9 @@ Move* generate_pawn_moves(const Position& pos, Move* moveList, Bitboard target) 
     constexpr Direction UpLeft   = (Us == WHITE ? NORTH_WEST : SOUTH_EAST);
 
     const Bitboard emptySquares = ~pos.pieces();
-    const Bitboard enemies      = Type == EVASIONS ? pos.checkers() : pos.pieces(Them);
+    // Self-capture chess: pawns can capture any occupied square except the king
+    const Square   ksq     = pos.square<KING>(Us);
+    const Bitboard enemies = Type == EVASIONS ? pos.checkers() : pos.pieces() & ~square_bb(ksq);
 
     Bitboard pawnsOn7    = pos.pieces(Us, PAWN) & TRank7BB;
     Bitboard pawnsNotOn7 = pos.pieces(Us, PAWN) & ~TRank7BB;
