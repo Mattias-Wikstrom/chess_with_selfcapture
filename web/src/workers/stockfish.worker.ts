@@ -16,6 +16,7 @@ declare function Stockfish(opts: {
   locateFile?: (path: string, prefix: string) => string;
 }): Promise<{
   cwrap: (name: string, ret: string | null, argTypes: string[]) => (...args: unknown[]) => unknown;
+  FS: { writeFile: (path: string, data: Uint8Array) => void };
 }>;
 
 let sfCmd: ((cmd: string) => void) | null = null;
@@ -64,13 +65,32 @@ self.onmessage = (e: MessageEvent<string>) => {
     },
   });
 
-  console.log('[sf worker] module ready, cwrapping…');
+  // Load NNUE network files into the virtual filesystem before init.
+  // The engine's load_networks() will find them there on startup.
+  self.postMessage('stockfish-loading-networks');
+  const nnueFiles = ['nn-1c0000000000.nnue', 'nn-37f18f62d772.nnue'];
+  await Promise.all(
+    nnueFiles.map(async (name) => {
+      try {
+        const resp = await fetch('/' + name);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = new Uint8Array(await resp.arrayBuffer());
+        mod.FS.writeFile('/' + name, data);
+      } catch (e) {
+        console.warn(`[sf worker] could not load ${name}:`, e);
+      }
+    }),
+  );
+
   const stockfish_init = mod.cwrap('stockfish_init', null, []) as () => void;
   sfCmd = mod.cwrap('stockfish_cmd', null, ['string']) as (cmd: string) => void;
 
-  console.log('[sf worker] calling stockfish_init…');
   stockfish_init();
-  console.log('[sf worker] stockfish_init returned, sending uci…');
+
+  // Force-load networks from the absolute paths we wrote above.
+  // load_networks() during init uses a CWD-relative path and may miss them.
+  sfCmd('setoption name EvalFile value /nn-1c0000000000.nnue');
+  sfCmd('setoption name EvalFileSmall value /nn-37f18f62d772.nnue');
+
   sfCmd('uci');
-  console.log('[sf worker] uci sent');
 })();

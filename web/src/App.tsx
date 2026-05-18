@@ -36,7 +36,7 @@ function parsePerft1(lines: string[]): LegalMoves {
 // --------------------------------------------------------------------------
 
 export default function App() {
-  const { isReady, send, subscribe } = useStockfish();
+  const { isReady, isLoadingNetworks, send, subscribe } = useStockfish();
 
   const [mode, setMode] = useState<GameMode>('white-vs-engine');
   const [fen, setFen] = useState(START_FEN);
@@ -82,14 +82,14 @@ export default function App() {
   );
 
   // --------------------------------------------------------------------------
-  // Request engine best move via "go movetime 1500"
+  // Request engine best move via "go depth 12"
   // --------------------------------------------------------------------------
   const requestEngineMove = useCallback(
     (history: string[]) => {
       setEngineThinking(true);
       awaitingBestmove.current = true;
       send(buildPositionCmd(history));
-      send('go movetime 1500');
+      send('go depth 12');
     },
     [send],
   );
@@ -346,7 +346,8 @@ export default function App() {
         </div>
 
         <div className="status-row">
-          {!isReady && <span className="loading">Loading engine…</span>}
+          {!isReady && !isLoadingNetworks && <span className="loading">Loading engine…</span>}
+          {isLoadingNetworks && <span className="loading">Loading neural network…</span>}
           {isReady && engineThinking && <span className="thinking">Engine thinking…</span>}
           {isReady && !engineThinking && (
             <span className={status !== 'playing' ? 'gameover' : ''}>{statusMsg}</span>
