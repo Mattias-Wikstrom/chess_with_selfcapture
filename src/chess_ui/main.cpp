@@ -3,7 +3,6 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
-#include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
 #include <QWidget>
@@ -28,15 +27,25 @@ public:
 
         chessBoard = new ChessBoard(this);
 
-        // Control panel — two rows to keep everything visible
         QWidget *controlPanel = new QWidget(this);
         QVBoxLayout *controlLayout = new QVBoxLayout(controlPanel);
         controlLayout->setContentsMargins(0, 0, 0, 0);
 
+        // Row 1: mode selection
         QWidget *row1 = new QWidget(controlPanel);
         QHBoxLayout *row1Layout = new QHBoxLayout(row1);
         row1Layout->setContentsMargins(0, 0, 0, 0);
 
+        modeCombo = new QComboBox(this);
+        modeCombo->addItem("Play as White vs Engine");
+        modeCombo->addItem("Play as Black vs Engine");
+        modeCombo->addItem("Player vs Player");
+        modeCombo->addItem("Engine vs Engine");
+
+        row1Layout->addWidget(modeCombo);
+        row1Layout->addStretch();
+
+        // Row 2: game controls
         QWidget *row2 = new QWidget(controlPanel);
         QHBoxLayout *row2Layout = new QHBoxLayout(row2);
         row2Layout->setContentsMargins(0, 0, 0, 0);
@@ -44,33 +53,28 @@ public:
         QPushButton *newGameBtn = new QPushButton("New Game", this);
         QPushButton *setPositionBtn = new QPushButton("Set Position (FEN)", this);
 
-        vsEngineCheck = new QCheckBox("Play vs Engine", this);
-
-        colorCombo = new QComboBox(this);
-        colorCombo->addItem("Play as White");
-        colorCombo->addItem("Play as Black");
-
-        statusLabel = new QLabel("White's turn", this);
-
-        row1Layout->addWidget(newGameBtn);
-        row1Layout->addWidget(vsEngineCheck);
-        row1Layout->addWidget(colorCombo);
-        row1Layout->addWidget(statusLabel);
-        row1Layout->addStretch();
-
+        row2Layout->addWidget(newGameBtn);
         row2Layout->addWidget(setPositionBtn);
         row2Layout->addStretch();
 
+        // Row 3: status
+        QWidget *row3 = new QWidget(controlPanel);
+        QHBoxLayout *row3Layout = new QHBoxLayout(row3);
+        row3Layout->setContentsMargins(0, 0, 0, 0);
+
+        statusLabel = new QLabel("White's turn", this);
+        row3Layout->addWidget(statusLabel);
+        row3Layout->addStretch();
+
         controlLayout->addWidget(row1);
         controlLayout->addWidget(row2);
+        controlLayout->addWidget(row3);
 
         mainLayout->addWidget(controlPanel);
         mainLayout->addWidget(chessBoard, 1);
 
         setCentralWidget(centralWidget);
 
-        // Default engine path: look for stockfish sibling to the app binary,
-        // or fall back to the source tree location.
         QString defaultEnginePath = QCoreApplication::applicationDirPath() + "/../stockfish";
         if (!QFile::exists(defaultEnginePath))
             defaultEnginePath = QCoreApplication::applicationDirPath() + "/../../stockfish";
@@ -78,11 +82,13 @@ public:
 
         connect(newGameBtn, &QPushButton::clicked, this, &MainWindow::onNewGame);
         connect(setPositionBtn, &QPushButton::clicked, this, &MainWindow::onSetPosition);
-        connect(vsEngineCheck, &QCheckBox::toggled, this, &MainWindow::onVsEngineToggled);
-        connect(colorCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-                this, &MainWindow::onColorChanged);
+        connect(modeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                this, &MainWindow::onModeChanged);
         connect(chessBoard, &ChessBoard::moveMade, this, &MainWindow::onMoveMade);
         connect(chessBoard, &ChessBoard::gameOver, this, &MainWindow::onGameOver);
+
+        // Apply initial mode
+        applyMode(modeCombo->currentIndex());
     }
 
 private slots:
@@ -130,32 +136,12 @@ private slots:
         }
     }
 
-    void onVsEngineToggled(bool checked) {
-        if (checked) {
-            // Let the user pick an engine binary if the default doesn't exist
-            if (!QFile::exists(enginePath)) {
-                enginePath = QFileDialog::getOpenFileName(
-                    this, "Select Stockfish engine binary", QDir::homePath());
-                if (enginePath.isEmpty()) {
-                    vsEngineCheck->setChecked(false);
-                    return;
-                }
-            }
-            chessBoard->setVsEngine(true, enginePath);
-        } else {
-            chessBoard->setVsEngine(false);
-        }
-    }
-
-    void onColorChanged(int index) {
-        Stockfish::Color humanColor = (index == 0) ? Stockfish::WHITE : Stockfish::BLACK;
-        chessBoard->setHumanColor(humanColor);
+    void onModeChanged(int index) {
+        applyMode(index);
     }
 
     void onMoveMade(const QString &move) {
         Q_UNUSED(move);
-        // Update status based on whose turn it is (ChessBoard doesn't expose it directly,
-        // so we just toggle — a proper impl would query the engine side to move)
         QString current = statusLabel->text();
         if (current.startsWith("White"))
             statusLabel->setText("Black's turn");
@@ -168,10 +154,37 @@ private slots:
     }
 
 private:
+    void applyMode(int index) {
+        // 0: White vs Engine, 1: Black vs Engine, 2: PvP, 3: EvE
+        bool vsEngine = (index == 0 || index == 1 || index == 3);
+
+        if (vsEngine && !QFile::exists(enginePath)) {
+            enginePath = QFileDialog::getOpenFileName(
+                this, "Select Stockfish engine binary", QDir::homePath());
+            if (enginePath.isEmpty()) {
+                modeCombo->setCurrentIndex(2); // fall back to PvP
+                return;
+            }
+        }
+
+        if (index == 0) {
+            chessBoard->setVsEngine(true, enginePath);
+            chessBoard->setHumanColor(Stockfish::WHITE);
+        } else if (index == 1) {
+            chessBoard->setVsEngine(true, enginePath);
+            chessBoard->setHumanColor(Stockfish::BLACK);
+        } else if (index == 2) {
+            chessBoard->setVsEngine(false);
+        } else {
+            // Engine vs engine: engine plays both sides
+            chessBoard->setVsEngine(true, enginePath);
+            chessBoard->setHumanColor(Stockfish::COLOR_NB); // no human
+        }
+    }
+
     ChessBoard *chessBoard;
     QLabel *statusLabel;
-    QCheckBox *vsEngineCheck;
-    QComboBox *colorCombo;
+    QComboBox *modeCombo;
     QString enginePath;
 };
 
