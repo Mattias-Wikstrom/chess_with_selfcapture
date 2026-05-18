@@ -101,6 +101,8 @@ void ChessBoard::onEngineBestMove(const QString &move) {
         update();
         if (engine.isGameOver())
             emit gameOver("Game Over");
+        else if (vsEngine && engine.sideToMove() != humanColor)
+            QTimer::singleShot(100, this, &ChessBoard::triggerEngineMove);
     } else {
         qDebug() << "Engine returned illegal move:" << move;
     }
