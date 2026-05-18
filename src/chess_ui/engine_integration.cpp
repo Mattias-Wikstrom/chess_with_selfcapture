@@ -55,7 +55,11 @@ bool ChessEngine::isLegalMove(const std::string& moveString) const {
 }
 
 bool ChessEngine::isGameOver() const {
-    return pos.is_draw(0) || pos.is_repetition(0) || pos.checkers(); // Add more conditions as needed
+    if (pos.is_draw(0) || pos.is_repetition(0))
+        return true;
+    // Checkmate or stalemate: no legal moves available
+    Stockfish::MoveList<Stockfish::LEGAL> legalMoves(pos);
+    return legalMoves.size() == 0;
 }
 
 std::string ChessEngine::getFEN() const {
