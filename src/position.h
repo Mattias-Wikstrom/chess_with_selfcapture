@@ -327,7 +327,10 @@ inline bool Position::capture(Move m) const {
 // generation is needed to avoid the generation of duplicate moves.
 inline bool Position::capture_stage(Move m) const {
     assert(m.is_ok());
-    return capture(m) || m.promotion_type() == QUEEN;
+    // A move is from the capture stage if it targets an occupied square (any color) or is a queen promotion.
+    if (m.type_of() == CASTLING) return false;
+    if (m.type_of() == EN_PASSANT) return true;
+    return !empty(m.to_sq()) || m.promotion_type() == QUEEN;
 }
 
 inline Piece Position::captured_piece() const { return st->capturedPiece; }

@@ -143,7 +143,7 @@ struct AccumulatorState {
 class AccumulatorStack {
    public:
     AccumulatorStack() :
-        accumulators(MAX_PLY + 1),
+        accumulators(MAX_PLY + 10),
         size{1} {}
 
     [[nodiscard]] const AccumulatorState& latest() const noexcept;
