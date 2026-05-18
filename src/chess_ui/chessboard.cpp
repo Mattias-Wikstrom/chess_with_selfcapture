@@ -5,6 +5,8 @@
 #include <QDebug>
 #include <QSvgRenderer>
 #include <QDir>
+#include <QMessageBox>
+#include <QTimer>
 
 #include <iostream>
 
@@ -28,6 +30,76 @@ ChessBoard::~ChessBoard() {
 void ChessBoard::initializeBoard() {
     board.resize(BOARD_SIZE, std::vector<ChessPiece>(BOARD_SIZE));
     syncBoardWithEngine();  // Initialize board from engine
+}
+
+void ChessBoard::newGame() {
+    engineThinking = false;
+    engine.setPosition();
+    syncBoardWithEngine();
+    update();
+    // If human plays black the engine moves first
+    if (vsEngine && engine.sideToMove() != humanColor)
+        QTimer::singleShot(200, this, &ChessBoard::triggerEngineMove);
+}
+
+void ChessBoard::setVsEngine(bool enabled, const QString &enginePath) {
+    vsEngine = enabled;
+    if (enabled) {
+        if (!uciEngine) {
+            uciEngine = new UciEngine(this);
+            connect(uciEngine, &UciEngine::engineReady,   this, &ChessBoard::onEngineReady);
+            connect(uciEngine, &UciEngine::bestMoveReady, this, &ChessBoard::onEngineBestMove);
+            connect(uciEngine, &UciEngine::engineError,   this, &ChessBoard::onEngineError);
+        }
+        QString path = enginePath.isEmpty() ? uciEnginePath : enginePath;
+        if (!path.isEmpty())
+            uciEnginePath = path;
+        if (!uciEngine->isRunning() && !uciEnginePath.isEmpty()) {
+            if (!uciEngine->start(uciEnginePath)) {
+                vsEngine = false;
+                return;
+            }
+        } else if (uciEngine->isRunning()) {
+            // Already running (e.g. re-enabling after a new game) — move immediately if needed
+            if (engine.sideToMove() != humanColor)
+                QTimer::singleShot(100, this, &ChessBoard::triggerEngineMove);
+        }
+    }
+}
+
+void ChessBoard::onEngineReady() {
+    // Engine handshake complete — trigger its first move if it plays the current side
+    if (vsEngine && engine.sideToMove() != humanColor)
+        QTimer::singleShot(100, this, &ChessBoard::triggerEngineMove);
+}
+
+void ChessBoard::setHumanColor(Stockfish::Color color) {
+    humanColor = color;
+}
+
+void ChessBoard::triggerEngineMove() {
+    if (!vsEngine || !uciEngine || engineThinking) return;
+    engineThinking = true;
+    uciEngine->requestMove(QString::fromStdString(engine.getFEN()));
+}
+
+void ChessBoard::onEngineBestMove(const QString &move) {
+    engineThinking = false;
+    std::string moveStr = move.toStdString();
+    if (engine.isLegalMove(moveStr) && engine.makeMove(moveStr)) {
+        syncBoardWithEngine();
+        emit moveMade(move);
+        update();
+        if (engine.isGameOver())
+            emit gameOver("Game Over");
+    } else {
+        qDebug() << "Engine returned illegal move:" << move;
+    }
+}
+
+void ChessBoard::onEngineError(const QString &msg) {
+    engineThinking = false;
+    QMessageBox::warning(this, "Engine Error", msg);
 }
 
 void ChessBoard::syncBoardWithEngine() {
@@ -330,11 +402,15 @@ void ChessBoard::handleSquareClick(const QPoint &boardPos) {
 }
 
 void ChessBoard::startDrag(const QPoint &boardPos) {
+    // Block interaction while the engine is thinking or when it's the engine's turn
+    if (vsEngine && (engineThinking || engine.sideToMove() != humanColor))
+        return;
+
     const ChessPiece &startDragpiece = board[boardPos.y()][boardPos.x()];
     if (startDragpiece.isEmpty()) return;
-    
+
     // Check if it's the correct side to move
-    PieceColor currentSide = (engine.sideToMove() == Stockfish::WHITE) ? 
+    PieceColor currentSide = (engine.sideToMove() == Stockfish::WHITE) ?
                             PieceColor::White : PieceColor::Black;
     if (startDragpiece.color != currentSide) {
         qDebug() << "Not your turn!";
@@ -354,30 +430,17 @@ void ChessBoard::endDrag(const QPoint &boardPos) {
     if (!isDragging) return;
     
     dragEndSquare = boardPos;
-    
-    // Drag from dragStartSquare to boardPos
-    // (x, y) = (0, 0) is the top-left corner on the chess board
-    // (x, y) = (7, 7) is the bottom-right corner on the chess board
 
-        std::cout << "boardPos: x y" << dragStartSquare.x() << " -- " << dragStartSquare.y() << std::endl;
-    std::cout << "Check if this move requires promotion" << std::endl;
-    // Check if this move requires promotion
     if (needsPromotion(dragStartSquare, boardPos)) {
-        
-        std::cout << "needsPromotion" << std::endl;
         pendingPromotion = true;
-        // Show promotion dialog
         PromotionDialog dialog(this, draggedPiece.color);
         if (dialog.exec() == QDialog::Accepted) {
-            std::cout << "Calling completeMove" << std::endl;
             completeMove(dialog.getSelectedPiece());
         } else {
-            // User cancelled, return piece to original position
             board[dragStartSquare.y()][dragStartSquare.x()] = draggedPiece;
         }
     } else {
-        std::cout << "completeMove" << std::endl;
-        completeMove(); // No promotion needed
+        completeMove();
     }
     
     // Reset drag state
@@ -392,17 +455,15 @@ void ChessBoard::completeMove(UIPieceType promotionPiece) {
     std::string toSquare = ChessEngine::toAlgebraic(dragEndSquare.x(), dragEndSquare.y());
     std::string moveString = fromSquare + toSquare;
     
-    // Add promotion piece if needed
     if (promotionPiece != UIPieceType::None) {
         char promoChar;
         switch (promotionPiece) {
             case UIPieceType::Rook:   promoChar = 'r'; break;
             case UIPieceType::Bishop: promoChar = 'b'; break;
             case UIPieceType::Knight: promoChar = 'n'; break;
-            default: promoChar = 'q'; break; // Queen is default
+            default: promoChar = 'q'; break;
         }
         moveString += promoChar;
-        std::cout << "promoChar: " << promoChar << std::endl;
     }
 
     
@@ -411,12 +472,13 @@ void ChessBoard::completeMove(UIPieceType promotionPiece) {
         if (engine.makeMove(moveString)) {
             syncBoardWithEngine();
             emit moveMade(QString::fromStdString(moveString));
-            
+
             qDebug() << "Move executed:" << QString::fromStdString(moveString);
-            
-            // Check for game over
+
             if (engine.isGameOver()) {
                 emit gameOver("Game Over");
+            } else if (vsEngine && engine.sideToMove() != humanColor) {
+                QTimer::singleShot(100, this, &ChessBoard::triggerEngineMove);
             }
         }
     } else {
@@ -427,20 +489,8 @@ void ChessBoard::completeMove(UIPieceType promotionPiece) {
 }
 
 bool ChessBoard::needsPromotion(const QPoint& from, const QPoint& to) const {
-    // Check if this is a pawn promotion
     const ChessPiece &piece = board[from.y()][from.x()];
- std::cout << "piece.type: " << (int) piece.type << std::endl;
-
-    if (piece.type != UIPieceType::Pawn) {
-        std::cout << "not a pawn" << std::endl;
-        return false;
-    } 
-
-    std::cout << ((piece.color == PieceColor::White) ? "white" : "black") << std::endl;
-
-    std::cout << "Y: " << to.y() << std::endl;
-
-    // Pawn reaching the last rank
+    if (piece.type != UIPieceType::Pawn) return false;
     return (piece.color == PieceColor::White && to.y() == 0) ||
            (piece.color == PieceColor::Black && to.y() == 7);
 }
@@ -449,27 +499,16 @@ bool ChessBoard::isValidMove(const QPoint& from, const QPoint& to) const {
     std::string fromSquare = ChessEngine::toAlgebraic(from.x(), from.y());
     std::string toSquare = ChessEngine::toAlgebraic(to.x(), to.y());
     std::string moveString = fromSquare + toSquare;
-    
-    std::cout << "from: x: " << from.x() << "y: " << from.y() << std::endl;
-    std::cout << "Check regular move" << std::endl;
 
-    // Check regular move
     if (engine.isLegalMove(moveString)) return true;
-    
-    std::cout << "Check if any promotion would make it legal" << std::endl;
 
-    // Check if any promotion would make it legal
     if (needsPromotion(from, to)) {
-        std::cout << "needsPromotion" << std::endl;
-
-        return engine.isLegalMove(moveString + "q") ||  // Queen
-               engine.isLegalMove(moveString + "r") ||  // Rook
-               engine.isLegalMove(moveString + "b") ||  // Bishop
-               engine.isLegalMove(moveString + "n");    // Knight
+        return engine.isLegalMove(moveString + "q") ||
+               engine.isLegalMove(moveString + "r") ||
+               engine.isLegalMove(moveString + "b") ||
+               engine.isLegalMove(moveString + "n");
     }
 
-    std::cout << "false" << std::endl;
-    
     return false;
 }
 

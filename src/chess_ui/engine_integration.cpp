@@ -114,16 +114,19 @@ Stockfish::Move ChessEngine::moveFromString(const std::string& input) const {
             // This is either an /en passant/ capture or an invalid move
             return Move::make<EN_PASSANT>(from, to);
         } else if (
-            (pos.piece_on(from) == Piece::W_KING &&
-                (from == Square::SQ_E1 && to == Square::SQ_A1) 
-                || (from == Square::SQ_E1 && to == Square::SQ_H1))
+            (pos.piece_on(from) == Piece::W_KING && from == Square::SQ_E1 &&
+                (to == Square::SQ_A1 || to == Square::SQ_H1 ||
+                 to == Square::SQ_C1 || to == Square::SQ_G1))
             ||
-            (pos.piece_on(from) == Piece::B_KING &&
-                (from == Square::SQ_E8 && to == Square::SQ_A8)
-                || (from == Square::SQ_E8 && to == Square::SQ_H8))
+            (pos.piece_on(from) == Piece::B_KING && from == Square::SQ_E8 &&
+                (to == Square::SQ_A8 || to == Square::SQ_H8 ||
+                 to == Square::SQ_C8 || to == Square::SQ_G8))
         ) {
-            std::cout << "Attempting a castling move." << std::endl;
-            // This is either a castling move or an invalid move
+            // Map traditional castling destination (g/c file) to rook square (h/a file)
+            if (to == Square::SQ_G1) to = Square::SQ_H1;
+            else if (to == Square::SQ_C1) to = Square::SQ_A1;
+            else if (to == Square::SQ_G8) to = Square::SQ_H8;
+            else if (to == Square::SQ_C8) to = Square::SQ_A8;
             return Move::make<CASTLING>(from, to);
         } else {
             return Move(from, to);

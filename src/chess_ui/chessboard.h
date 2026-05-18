@@ -16,6 +16,7 @@
 #include <vector>
 #include "engine_integration.h"
 #include "chesspiece.h"
+#include "uci_engine.h"
 
 // Promotion Dialog
 class PromotionDialog : public QDialog {
@@ -42,6 +43,11 @@ public:
     explicit ChessBoard(QWidget *parent = nullptr);
     ~ChessBoard();
     void initializeBoard();
+    void newGame();
+
+    // Engine opponent
+    void setVsEngine(bool enabled, const QString &enginePath = QString());
+    void setHumanColor(Stockfish::Color color);  // which side the human plays
     
 signals:
     void moveMade(const QString& move);  // Signal when a move is made
@@ -56,6 +62,9 @@ protected:
 
 private slots:
     void handlePromotion(UIPieceType promotionPiece);
+    void onEngineReady();
+    void onEngineBestMove(const QString &move);
+    void onEngineError(const QString &msg);
 
 private:
     static const int BOARD_SIZE = 8;
@@ -72,9 +81,18 @@ private:
     QPoint dragEndSquare;  // Store where we're dragging to
     ChessPiece draggedPiece;
     
-    // Engine integration
-    ChessEngine engine; 
-    
+    // Engine integration (rules/position)
+    ChessEngine engine;
+
+    // UCI engine for computer opponent
+    UciEngine *uciEngine = nullptr;
+    bool vsEngine = false;
+    bool engineThinking = false;
+    Stockfish::Color humanColor = Stockfish::WHITE;
+    QString uciEnginePath;
+
+    void triggerEngineMove();
+
     QMap<QString, QSvgRenderer*> svgRenderers;
     
     void drawBoard(QPainter &painter);

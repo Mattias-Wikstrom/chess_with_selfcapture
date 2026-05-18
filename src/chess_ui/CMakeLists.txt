@@ -18,6 +18,7 @@ add_executable(ChessUI
     main.cpp
     chessboard.cpp
     engine_integration.cpp
+    uci_engine.cpp
     ../bitboard.cpp  
     ../misc.cpp  
     ../movegen.cpp  
