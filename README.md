@@ -14,6 +14,9 @@ The directory src/chess_ui contains code for a simple chess GUI which allows you
 
 The reason for including this GUI is that many chess GUIs fail to work correctly with self-capture chess.
 
+# A web interface
+A web version of the code can be tried at https://mattias-wikstrom.github.io/chess_with_selfcapture/ .
+
 # Quotes from the paper
 'Self-capture is sometimes referred to as “Reform Chess” or
 “Free Capture Chess”' (p. 2)
