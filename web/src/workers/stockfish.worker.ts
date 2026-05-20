@@ -38,7 +38,8 @@ self.onmessage = (e: MessageEvent<string>) => {
 
 (async () => {
   // Load Emscripten glue from /public (served as a static asset).
-  importScripts('/stockfish.js');
+  // BASE_URL is replaced at build time by Vite (e.g. "/chess_with_selfcapture/").
+  importScripts(import.meta.env.BASE_URL + 'stockfish.js');
 
   const mod = await Stockfish({
     print(line: string) {
@@ -61,7 +62,7 @@ self.onmessage = (e: MessageEvent<string>) => {
     // Emscripten resolves file paths relative to the worker's URL, which Vite
     // maps to an internal build URL.  Force all generated assets to the public root.
     locateFile(path: string) {
-      return '/' + path;
+      return import.meta.env.BASE_URL + path;
     },
   });
 
@@ -72,7 +73,7 @@ self.onmessage = (e: MessageEvent<string>) => {
   await Promise.all(
     nnueFiles.map(async (name) => {
       try {
-        const resp = await fetch('/' + name);
+        const resp = await fetch(import.meta.env.BASE_URL + name);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = new Uint8Array(await resp.arrayBuffer());
         mod.FS.writeFile('/' + name, data);

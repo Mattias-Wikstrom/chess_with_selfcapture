@@ -1,0 +1,82 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [selfcapture_chess]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Cache NNUE weights — filenames are content-addressed so the key is stable.
+      - name: Cache NNUE networks
+        id: cache-nnue
+        uses: actions/cache@v4
+        with:
+          path: web/public/*.nnue
+          key: nnue-nn-1c0000000000-nn-37f18f62d772
+
+      - name: Download NNUE networks
+        if: steps.cache-nnue.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p web/public
+          for name in nn-1c0000000000.nnue nn-37f18f62d772.nnue; do
+            curl -fL -o "web/public/$name" \
+              "https://tests.stockfishchess.org/api/nn/$name" || \
+            curl -fL -o "web/public/$name" \
+              "https://github.com/official-stockfish/networks/raw/master/$name"
+          done
+
+      # Build the custom self-capture Stockfish engine as WebAssembly.
+      - name: Install Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 5.0.7
+
+      - name: Build Stockfish WASM
+        run: bash scripts/build_wasm.sh
+
+      # Build the React/Vite UI.
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install npm dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Build UI
+        working-directory: web
+        run: npm run build -- --base=/chess_with_selfcapture/
+
+      # Deploy to GitHub Pages.
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
