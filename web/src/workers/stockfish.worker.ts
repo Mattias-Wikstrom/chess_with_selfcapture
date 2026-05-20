@@ -9,6 +9,8 @@
  *   "stockfish-ready"  — engine initialised, uciok received, ready for commands
  */
 
+declare function importScripts(...urls: string[]): void;
+
 // Emscripten Stockfish factory — loaded via importScripts from /public/stockfish.js
 declare function Stockfish(opts: {
   print: (line: string) => void;
