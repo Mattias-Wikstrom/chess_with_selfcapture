@@ -85,7 +85,7 @@ emcc \
     -s INITIAL_MEMORY=268435456 \
     -s STACK_SIZE=8388608 \
     -s EXPORTED_FUNCTIONS='["_stockfish_init","_stockfish_cmd","_main"]' \
-    -s EXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
+    -s EXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS"]' \
     -s EXIT_RUNTIME=0 \
     -I"$SRC_DIR" \
     "${ABS_SRCS[@]}" \
