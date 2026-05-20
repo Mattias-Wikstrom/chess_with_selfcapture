@@ -26,7 +26,7 @@ set -euo pipefail
 
 # Source Emscripten, then override EMSDK_PYTHON with the pyenv Python 3.10
 # (emsdk_env.sh clears EMSDK_PYTHON so we must set it afterwards).
-source "$HOME/emsdk/emsdk_env.sh"
+source "${EMSDK:-$HOME/emsdk}/emsdk_env.sh"
 if [ -f "$HOME/.pyenv/versions/3.10.15/bin/python3.10" ]; then
     export EMSDK_PYTHON="$HOME/.pyenv/versions/3.10.15/bin/python3.10"
 fi
