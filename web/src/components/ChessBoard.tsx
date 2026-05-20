@@ -36,7 +36,7 @@ export function fenSideToMove(fen: string): 'w' | 'b' {
 function pieceImage(piece: string): string {
   const upper = piece.toUpperCase();
   const color = piece === upper ? 'w' : 'b';
-  return `/pieces/${color}${upper}.svg`;
+  return `${import.meta.env.BASE_URL}pieces/${color}${upper}.svg`;
 }
 
 // --------------------------------------------------------------------------
