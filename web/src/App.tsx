@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import ChessBoard, { fenSideToMove, LegalMoves } from './components/ChessBoard';
+import ChessBoard, { fenSideToMove, isSelfCapture, LegalMoves, parseFenBoard } from './components/ChessBoard';
 import { useStockfish } from './hooks/useStockfish';
 import './App.css';
 
@@ -12,6 +12,7 @@ const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 type GameMode = 'white-vs-engine' | 'black-vs-engine' | 'pvp' | 'eve';
 type GameStatus = 'playing' | 'checkmate' | 'stalemate' | 'draw';
 type EngineLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+type BasePosition = { type: 'startpos' } | { type: 'fen'; fen: string };
 
 type EngineLevelConfig = {
   elo: number | null;
@@ -73,6 +74,7 @@ export default function App() {
   const awaitingBestmove = useRef(false);
   const awaitingGameOver = useRef(false); // set when perft returns 0 — waiting for "d" output
   const latestFen = useRef(START_FEN);   // mirrors fen state but readable inside callbacks
+  const basePosition = useRef<BasePosition>({ type: 'startpos' });
   const hasInitialisedEngine = useRef(false);
 
   // The FEN at the time we last requested perft/bestmove (for matching responses)
@@ -104,10 +106,15 @@ export default function App() {
   // --------------------------------------------------------------------------
   // Build UCI position command from current state
   // --------------------------------------------------------------------------
-  function buildPositionCmd(history: string[]): string {
-    if (history.length === 0) return 'position startpos';
-    return `position startpos moves ${history.join(' ')}`;
-  }
+  const buildPositionCmd = useCallback((history: string[]): string => {
+    const moves = history.length > 0 ? ` moves ${history.join(' ')}` : '';
+
+    if (basePosition.current.type === 'fen') {
+      return `position fen ${basePosition.current.fen}${moves}`;
+    }
+
+    return `position startpos${moves}`;
+  }, []);
 
   // --------------------------------------------------------------------------
   // Request legal moves via "go perft 1"
@@ -120,7 +127,7 @@ export default function App() {
       send(buildPositionCmd(history));
       send('go perft 1');
     },
-    [send],
+    [buildPositionCmd, send],
   );
 
   // --------------------------------------------------------------------------
@@ -135,7 +142,7 @@ export default function App() {
       send(buildPositionCmd(history));
       send(`go depth ${config.depth}`);
     },
-    [configureEngineLevel, engineLevel, send],
+    [buildPositionCmd, configureEngineLevel, engineLevel, send],
   );
 
   // --------------------------------------------------------------------------
@@ -169,7 +176,7 @@ export default function App() {
       // We'll update fen & status once perft output arrives
       pendingFen.current = currentFen; // will be updated from "d" if needed
     },
-    [send],
+    [buildPositionCmd, send],
   );
 
   // --------------------------------------------------------------------------
@@ -275,6 +282,7 @@ export default function App() {
   const handleNewGame = useCallback(() => {
     setFen(START_FEN);
     latestFen.current = START_FEN;
+    basePosition.current = { type: 'startpos' };
     setMoveHistory([]);
     pendingHistory.current = [];
     setLegalMoves(new Map());
@@ -302,13 +310,10 @@ export default function App() {
   const handleSetPosition = useCallback(() => {
     const trimmed = fenInput.trim();
     if (!trimmed) return;
-    // We can't easily "position fen ..." + keep a move history, so we reset
-    // history and treat the FEN as the start.
-    // Stockfish supports "position fen <FEN> moves ..." but we'd need a way to
-    // convert the FEN into a startpos-relative history. Simplest: just use
-    // "position fen <FEN>" and empty move history, but store the FEN as the
-    // base. For this we rely on a slightly different flow.
+    // Reset history and treat this FEN as the base position for future moves.
     setFen(trimmed);
+    latestFen.current = trimmed;
+    basePosition.current = { type: 'fen', fen: trimmed };
     setMoveHistory([]);
     pendingHistory.current = [];
     setLegalMoves(new Map());
@@ -370,9 +375,15 @@ export default function App() {
   const handleMove = useCallback(
     (uciMove: string) => {
       if (status !== 'playing' || engineThinking) return;
+
+      if (isSelfCapture(parseFenBoard(fen), uciMove.slice(0, 2), uciMove.slice(2, 4))
+        && !window.confirm('Capture your own piece on this square?')) {
+        return;
+      }
+
       applyMove(uciMove, pendingHistory.current, fen);
     },
-    [status, engineThinking, applyMove, fen],
+    [status, engineThinking, fen, applyMove],
   );
 
   const flipped = mode === 'black-vs-engine';
