@@ -14,21 +14,20 @@ type GameStatus = 'playing' | 'checkmate' | 'stalemate' | 'draw';
 type EngineLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 type EngineLevelConfig = {
-  skillLevel: number;
-  multiPv: number;
+  elo: number | null;
   depth: number;
   label: string;
 };
 
 const ENGINE_LEVELS: Record<EngineLevel, EngineLevelConfig> = {
-  1: { skillLevel: -9, multiPv: 4, depth: 5, label: 'Level 1' },
-  2: { skillLevel: -5, multiPv: 4, depth: 5, label: 'Level 2' },
-  3: { skillLevel: -1, multiPv: 4, depth: 5, label: 'Level 3' },
-  4: { skillLevel: 3, multiPv: 4, depth: 5, label: 'Level 4' },
-  5: { skillLevel: 7, multiPv: 4, depth: 5, label: 'Level 5' },
-  6: { skillLevel: 11, multiPv: 4, depth: 8, label: 'Level 6' },
-  7: { skillLevel: 15, multiPv: 4, depth: 13, label: 'Level 7' },
-  8: { skillLevel: 20, multiPv: 1, depth: 22, label: 'Level 8 (Full strength)' },
+  1: { elo: 1400, depth: 5, label: 'Level 1' },
+  2: { elo: 1600, depth: 5, label: 'Level 2' },
+  3: { elo: 1800, depth: 5, label: 'Level 3' },
+  4: { elo: 2000, depth: 5, label: 'Level 4' },
+  5: { elo: 2200, depth: 5, label: 'Level 5' },
+  6: { elo: 2400, depth: 8, label: 'Level 6' },
+  7: { elo: 2650, depth: 13, label: 'Level 7' },
+  8: { elo: null, depth: 22, label: 'Level 8 (Full strength)' },
 };
 
 // --------------------------------------------------------------------------
@@ -87,8 +86,16 @@ export default function App() {
     (level: EngineLevel) => {
       const config = ENGINE_LEVELS[level];
       send('setoption name Threads value 1');
-      send(`setoption name MultiPV value ${config.multiPv}`);
-      send(`setoption name Skill Level value ${config.skillLevel}`);
+      send('setoption name MultiPV value 1');
+
+      if (config.elo === null) {
+        send('setoption name UCI_LimitStrength value false');
+        send('setoption name Skill Level value 20');
+      } else {
+        send('setoption name UCI_LimitStrength value true');
+        send(`setoption name UCI_Elo value ${config.elo}`);
+      }
+
       send('isready');
     },
     [send],
@@ -404,8 +411,10 @@ export default function App() {
             ))}
           </select>
           <span className="level-help">
-            Skill {ENGINE_LEVELS[engineLevel].skillLevel}, MultiPV {ENGINE_LEVELS[engineLevel].multiPv},
-            depth {ENGINE_LEVELS[engineLevel].depth}
+            {ENGINE_LEVELS[engineLevel].elo === null
+              ? 'Full strength, Skill 20'
+              : `UCI_Elo ${ENGINE_LEVELS[engineLevel].elo}`}{' '}
+            · depth {ENGINE_LEVELS[engineLevel].depth}
           </span>
         </div>
 
