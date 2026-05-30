@@ -71,6 +71,12 @@ select {
   cursor: pointer;
 }
 
+
+.level-help {
+  color: #bdbdbd;
+  font-size: 0.8rem;
+}
+
 button {
   padding: 0.35rem 0.9rem;
   border-radius: 4px;

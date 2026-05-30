@@ -11,6 +11,24 @@ const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 type GameMode = 'white-vs-engine' | 'black-vs-engine' | 'pvp' | 'eve';
 type GameStatus = 'playing' | 'checkmate' | 'stalemate' | 'draw';
+type EngineLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+type EngineLevelConfig = {
+  elo: number | null;
+  depth: number;
+  label: string;
+};
+
+const ENGINE_LEVELS: Record<EngineLevel, EngineLevelConfig> = {
+  1: { elo: 1400, depth: 5, label: 'Level 1' },
+  2: { elo: 1600, depth: 5, label: 'Level 2' },
+  3: { elo: 1800, depth: 5, label: 'Level 3' },
+  4: { elo: 2000, depth: 5, label: 'Level 4' },
+  5: { elo: 2200, depth: 5, label: 'Level 5' },
+  6: { elo: 2400, depth: 8, label: 'Level 6' },
+  7: { elo: 2650, depth: 13, label: 'Level 7' },
+  8: { elo: null, depth: 22, label: 'Level 8 (Full strength)' },
+};
 
 // --------------------------------------------------------------------------
 // Perft-1 output parser
@@ -47,6 +65,7 @@ export default function App() {
   const [statusMsg, setStatusMsg] = useState('White to move');
   const [fenInput, setFenInput] = useState('');
   const [engineThinking, setEngineThinking] = useState(false);
+  const [engineLevel, setEngineLevel] = useState<EngineLevel>(5);
 
   // We accumulate perft output lines until we see "Nodes searched:"
   const perftLinesRef = useRef<string[]>([]);
@@ -54,10 +73,33 @@ export default function App() {
   const awaitingBestmove = useRef(false);
   const awaitingGameOver = useRef(false); // set when perft returns 0 — waiting for "d" output
   const latestFen = useRef(START_FEN);   // mirrors fen state but readable inside callbacks
+  const hasInitialisedEngine = useRef(false);
 
   // The FEN at the time we last requested perft/bestmove (for matching responses)
   const pendingFen = useRef(START_FEN);
   const pendingHistory = useRef<string[]>([]);
+
+  // --------------------------------------------------------------------------
+  // Configure the UCI engine to mimic the selected Lichess AI level
+  // --------------------------------------------------------------------------
+  const configureEngineLevel = useCallback(
+    (level: EngineLevel) => {
+      const config = ENGINE_LEVELS[level];
+      send('setoption name Threads value 1');
+      send('setoption name MultiPV value 1');
+
+      if (config.elo === null) {
+        send('setoption name UCI_LimitStrength value false');
+        send('setoption name Skill Level value 20');
+      } else {
+        send('setoption name UCI_LimitStrength value true');
+        send(`setoption name UCI_Elo value ${config.elo}`);
+      }
+
+      send('isready');
+    },
+    [send],
+  );
 
   // --------------------------------------------------------------------------
   // Build UCI position command from current state
@@ -82,16 +124,18 @@ export default function App() {
   );
 
   // --------------------------------------------------------------------------
-  // Request engine best move via "go depth 12"
+  // Request engine best move using the selected Lichess-style level
   // --------------------------------------------------------------------------
   const requestEngineMove = useCallback(
-    (history: string[]) => {
+    (history: string[], level: EngineLevel = engineLevel) => {
+      const config = ENGINE_LEVELS[level];
       setEngineThinking(true);
       awaitingBestmove.current = true;
+      configureEngineLevel(level);
       send(buildPositionCmd(history));
-      send('go depth 12');
+      send(`go depth ${config.depth}`);
     },
-    [send],
+    [configureEngineLevel, engineLevel, send],
   );
 
   // --------------------------------------------------------------------------
@@ -216,13 +260,14 @@ export default function App() {
   // Initialise once the engine is ready
   // --------------------------------------------------------------------------
   useEffect(() => {
-    if (!isReady) return;
+    if (!isReady || hasInitialisedEngine.current) return;
+    hasInitialisedEngine.current = true;
     send('ucinewgame');
-    send('setoption name Threads value 1');
+    configureEngineLevel(engineLevel);
     requestLegalMoves([]);
     send('position startpos');
     send('d');
-  }, [isReady, requestLegalMoves, send]);
+  }, [configureEngineLevel, engineLevel, isReady, requestLegalMoves, send]);
 
   // --------------------------------------------------------------------------
   // New game
@@ -244,12 +289,12 @@ export default function App() {
     if (isReady) {
       send('stop');
       send('ucinewgame');
-      send('setoption name Threads value 1');
+      configureEngineLevel(engineLevel);
       requestLegalMoves([]);
       send('position startpos');
       send('d');
     }
-  }, [isReady, send, requestLegalMoves]);
+  }, [configureEngineLevel, engineLevel, isReady, send, requestLegalMoves]);
 
   // --------------------------------------------------------------------------
   // Set position from FEN
@@ -279,6 +324,28 @@ export default function App() {
     send('d');
     setFenInput('');
   }, [fenInput, send]);
+
+  // --------------------------------------------------------------------------
+  // Engine level change
+  // --------------------------------------------------------------------------
+  const handleEngineLevelChange = useCallback(
+    (newLevel: EngineLevel) => {
+      setEngineLevel(newLevel);
+      if (!isReady) return;
+
+      if (status === 'playing') {
+        const side = fenSideToMove(fen);
+        if (engineShouldPlay(side, mode)) {
+          send('stop');
+          requestEngineMove(pendingHistory.current, newLevel);
+          return;
+        }
+      }
+
+      configureEngineLevel(newLevel);
+    },
+    [configureEngineLevel, fen, isReady, mode, requestEngineMove, send, status],
+  );
 
   // --------------------------------------------------------------------------
   // Mode change
@@ -328,6 +395,27 @@ export default function App() {
             <option value="pvp">Player vs Player</option>
             <option value="eve">Engine vs Engine</option>
           </select>
+        </div>
+
+        <div className="control-row">
+          <label htmlFor="level-select">Engine level:</label>
+          <select
+            id="level-select"
+            value={engineLevel}
+            onChange={(e) => handleEngineLevelChange(Number(e.target.value) as EngineLevel)}
+          >
+            {(Object.keys(ENGINE_LEVELS).map(Number) as EngineLevel[]).map((level) => (
+              <option key={level} value={level}>
+                {ENGINE_LEVELS[level].label}
+              </option>
+            ))}
+          </select>
+          <span className="level-help">
+            {ENGINE_LEVELS[engineLevel].elo === null
+              ? 'Full strength, Skill 20'
+              : `UCI_Elo ${ENGINE_LEVELS[engineLevel].elo}`}{' '}
+            · depth {ENGINE_LEVELS[engineLevel].depth}
+          </span>
         </div>
 
         <div className="control-row">
