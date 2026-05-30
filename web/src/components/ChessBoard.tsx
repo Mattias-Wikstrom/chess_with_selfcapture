@@ -69,16 +69,16 @@ function fileRankToSq(file: number, rank: number): string {
   return String.fromCharCode(97 + file) + String(rank + 1);
 }
 
-export function pieceColor(piece: string): 'w' | 'b' {
+function pieceColor(piece: string): 'w' | 'b' {
   return piece === piece.toUpperCase() ? 'w' : 'b';
 }
 
-export function pieceAtSquare(board: (string | null)[][], sq: string): string | null {
+function pieceAtSquare(board: (string | null)[][], sq: string): string | null {
   const [file, rank] = sqToFileRank(sq);
   return board[rank]?.[file] ?? null;
 }
 
-export function isSelfCapture(board: (string | null)[][], fromSq: string, toSq: string): boolean {
+function isSelfCapture(board: (string | null)[][], fromSq: string, toSq: string): boolean {
   const movingPiece = pieceAtSquare(board, fromSq);
   const targetPiece = pieceAtSquare(board, toSq);
 
@@ -121,10 +121,20 @@ export default function ChessBoard({ fen, legalMoves, lastMove, onMove, flipped 
           (t) => t.length === 5 && t.slice(0, 4) === selected + sq,
         );
         if (promoTargets.length > 0) {
+          if (isSelfCapture(board, selected, sq)
+            && !window.confirm('Capture your own piece on this square?')) {
+            return;
+          }
+
           // Auto-promote to queen
           onMove(promoTargets.find((t) => t.endsWith('q')) ?? promoTargets[0]);
           setSelected(null);
         } else if (targets.some((t) => t.slice(2, 4) === sq)) {
+          if (isSelfCapture(board, selected, sq)
+            && !window.confirm('Capture your own piece on this square?')) {
+            return;
+          }
+
           onMove(selected + sq);
           setSelected(null);
         } else if (legalMoves.has(sq)) {
@@ -135,7 +145,7 @@ export default function ChessBoard({ fen, legalMoves, lastMove, onMove, flipped 
         }
       }
     },
-    [selected, legalMoves, onMove],
+    [selected, legalMoves, onMove, board],
   );
 
   const [lastFrom, lastTo] = lastMove ?? [null, null];
