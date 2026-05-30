@@ -1,11 +1,76 @@
+.boardWrapper {
+  position: relative;
+  width: min(80vmin, 560px);
+  height: min(80vmin, 560px);
+}
+
 .board {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(8, 1fr);
-  width: min(80vmin, 560px);
-  height: min(80vmin, 560px);
+  width: 100%;
+  height: 100%;
   border: 2px solid #5d4037;
   user-select: none;
+}
+
+.confirmOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.confirmPanel {
+  background: #1e1e1e;
+  border: 2px solid #795548;
+  border-radius: 8px;
+  padding: 1.4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  color: #f0f0f0;
+  font-size: 1rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+}
+
+.confirmButtons {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.captureBtn {
+  padding: 0.45rem 1.3rem;
+  border-radius: 4px;
+  border: none;
+  background: #b71c1c;
+  color: #f0f0f0;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.captureBtn:hover {
+  background: #e53935;
+}
+
+.cancelBtn {
+  padding: 0.45rem 1.3rem;
+  border-radius: 4px;
+  border: none;
+  background: #4a4a4a;
+  color: #f0f0f0;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cancelBtn:hover {
+  background: #616161;
 }
 
 .square {

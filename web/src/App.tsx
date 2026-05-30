@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import ChessBoard, { fenSideToMove, isSelfCapture, LegalMoves, parseFenBoard } from './components/ChessBoard';
+import ChessBoard, { fenSideToMove, LegalMoves } from './components/ChessBoard';
 import { useStockfish } from './hooks/useStockfish';
 import './App.css';
 
@@ -375,12 +375,6 @@ export default function App() {
   const handleMove = useCallback(
     (uciMove: string) => {
       if (status !== 'playing' || engineThinking) return;
-
-      if (isSelfCapture(parseFenBoard(fen), uciMove.slice(0, 2), uciMove.slice(2, 4))
-        && !window.confirm('Capture your own piece on this square?')) {
-        return;
-      }
-
       applyMove(uciMove, pendingHistory.current, fen);
     },
     [status, engineThinking, fen, applyMove],

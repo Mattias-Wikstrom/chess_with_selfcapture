@@ -98,6 +98,7 @@ export default function ChessBoard({ fen, legalMoves, lastMove, onMove, flipped 
   const board = parseFenBoard(fen);
 
   const [selected, setSelected] = useState<string | null>(null);
+  const [pendingMove, setPendingMove] = useState<string | null>(null);
 
   const displayFiles = flipped ? [...FILES].reverse() : FILES;
   const displayRanks = flipped ? RANKS : [...RANKS].reverse();
@@ -121,20 +122,20 @@ export default function ChessBoard({ fen, legalMoves, lastMove, onMove, flipped 
           (t) => t.length === 5 && t.slice(0, 4) === selected + sq,
         );
         if (promoTargets.length > 0) {
-          if (isSelfCapture(board, selected, sq)
-            && !window.confirm('Capture your own piece on this square?')) {
+          const moveToMake = promoTargets.find((t) => t.endsWith('q')) ?? promoTargets[0];
+          if (isSelfCapture(board, selected, sq)) {
+            setPendingMove(moveToMake);
+            setSelected(null);
             return;
           }
-
-          // Auto-promote to queen
-          onMove(promoTargets.find((t) => t.endsWith('q')) ?? promoTargets[0]);
+          onMove(moveToMake);
           setSelected(null);
         } else if (targets.some((t) => t.slice(2, 4) === sq)) {
-          if (isSelfCapture(board, selected, sq)
-            && !window.confirm('Capture your own piece on this square?')) {
+          if (isSelfCapture(board, selected, sq)) {
+            setPendingMove(selected + sq);
+            setSelected(null);
             return;
           }
-
           onMove(selected + sq);
           setSelected(null);
         } else if (legalMoves.has(sq)) {
@@ -151,49 +152,73 @@ export default function ChessBoard({ fen, legalMoves, lastMove, onMove, flipped 
   const [lastFrom, lastTo] = lastMove ?? [null, null];
 
   return (
-    <div className={styles.board} role="grid" aria-label="Chess board">
-      {displayRanks.map((rankLabel) => {
-        const rank = parseInt(rankLabel, 10) - 1;
-        return displayFiles.map((fileLabel) => {
-          const file = fileLabel.charCodeAt(0) - 97;
-          const sq = fileRankToSq(file, rank);
-          const piece = board[rank][file];
-          const isLight = (file + rank) % 2 === 1;
-          const isSelected = selected === sq;
-          const isTarget = selected !== null && (legalMoves.get(selected) ?? []).some(
-            (t) => t.slice(2, 4) === sq,
-          );
-          const isLastMove = sq === lastFrom || sq === lastTo;
+    <div className={styles.boardWrapper}>
+      <div className={styles.board} role="grid" aria-label="Chess board">
+        {displayRanks.map((rankLabel) => {
+          const rank = parseInt(rankLabel, 10) - 1;
+          return displayFiles.map((fileLabel) => {
+            const file = fileLabel.charCodeAt(0) - 97;
+            const sq = fileRankToSq(file, rank);
+            const piece = board[rank][file];
+            const isLight = (file + rank) % 2 === 1;
+            const isSelected = selected === sq;
+            const isTarget = selected !== null && (legalMoves.get(selected) ?? []).some(
+              (t) => t.slice(2, 4) === sq,
+            );
+            const isLastMove = sq === lastFrom || sq === lastTo;
 
-          return (
-            <div
-              key={sq}
-              className={[
-                styles.square,
-                isLight ? styles.light : styles.dark,
-                isSelected ? styles.selected : '',
-                isTarget ? styles.target : '',
-                isLastMove ? styles.lastMove : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              onClick={() => handleSquareClick(sq)}
-              role="gridcell"
-              aria-label={sq}
-            >
-              {piece && (
-                <img
-                  src={pieceImage(piece)}
-                  alt={piece}
-                  className={styles.piece}
-                  draggable={false}
-                />
-              )}
-              {isTarget && !piece && <div className={styles.dot} />}
+            return (
+              <div
+                key={sq}
+                className={[
+                  styles.square,
+                  isLight ? styles.light : styles.dark,
+                  isSelected ? styles.selected : '',
+                  isTarget ? styles.target : '',
+                  isLastMove ? styles.lastMove : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                onClick={() => handleSquareClick(sq)}
+                role="gridcell"
+                aria-label={sq}
+              >
+                {piece && (
+                  <img
+                    src={pieceImage(piece)}
+                    alt={piece}
+                    className={styles.piece}
+                    draggable={false}
+                  />
+                )}
+                {isTarget && !piece && <div className={styles.dot} />}
+              </div>
+            );
+          });
+        })}
+      </div>
+
+      {pendingMove && (
+        <div className={styles.confirmOverlay}>
+          <div className={styles.confirmPanel}>
+            <p>Capture your own piece?</p>
+            <div className={styles.confirmButtons}>
+              <button
+                className={styles.captureBtn}
+                onClick={() => { onMove(pendingMove); setPendingMove(null); }}
+              >
+                Capture
+              </button>
+              <button
+                className={styles.cancelBtn}
+                onClick={() => setPendingMove(null)}
+              >
+                Cancel
+              </button>
             </div>
-          );
-        });
-      })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
