@@ -69,6 +69,24 @@ function fileRankToSq(file: number, rank: number): string {
   return String.fromCharCode(97 + file) + String(rank + 1);
 }
 
+export function pieceColor(piece: string): 'w' | 'b' {
+  return piece === piece.toUpperCase() ? 'w' : 'b';
+}
+
+export function pieceAtSquare(board: (string | null)[][], sq: string): string | null {
+  const [file, rank] = sqToFileRank(sq);
+  return board[rank]?.[file] ?? null;
+}
+
+export function isSelfCapture(board: (string | null)[][], fromSq: string, toSq: string): boolean {
+  const movingPiece = pieceAtSquare(board, fromSq);
+  const targetPiece = pieceAtSquare(board, toSq);
+
+  return movingPiece !== null
+    && targetPiece !== null
+    && pieceColor(movingPiece) === pieceColor(targetPiece);
+}
+
 // --------------------------------------------------------------------------
 // Component
 // --------------------------------------------------------------------------
