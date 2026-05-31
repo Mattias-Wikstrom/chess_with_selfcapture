@@ -1,5 +1,7 @@
 node_modules/
 dist/
+.env
+.env.local
 public/stockfish.js
 public/stockfish.wasm
 public/stockfish.worker.js

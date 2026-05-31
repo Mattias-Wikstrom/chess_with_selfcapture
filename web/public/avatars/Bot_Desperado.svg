@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <rect width="80" height="80" rx="12" fill="#FFF8E1"/>
+  <!-- Cowboy hat -->
+  <path d="M14 34 Q20 20 40 22 Q60 20 66 34" fill="#5D4037"/>
+  <ellipse cx="40" cy="34" rx="28" ry="5" fill="#4E342E"/>
+  <rect x="26" y="18" width="28" height="16" rx="4" fill="#5D4037"/>
+  <!-- Face -->
+  <circle cx="40" cy="48" r="19" fill="#FFCC80"/>
+  <!-- Bandana -->
+  <path d="M21 55 Q40 50 59 55 Q55 65 40 67 Q25 65 21 55 Z" fill="#F44336"/>
+  <path d="M35 50 Q40 54 45 50" stroke="#B71C1C" stroke-width="1.5" fill="none"/>
+  <!-- Wild eyes -->
+  <circle cx="33" cy="45" r="4" fill="white"/>
+  <circle cx="47" cy="45" r="4" fill="white"/>
+  <circle cx="33" cy="45" r="2.5" fill="#1B5E20"/>
+  <circle cx="47" cy="45" r="2.5" fill="#1B5E20"/>
+  <circle cx="34" cy="44" r="0.8" fill="white"/>
+  <circle cx="48" cy="44" r="0.8" fill="white"/>
+  <!-- Bold brows -->
+  <path d="M29 40 Q33 37 37 40" stroke="#5D4037" stroke-width="2" fill="none"/>
+  <path d="M43 40 Q47 37 51 40" stroke="#5D4037" stroke-width="2" fill="none"/>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <rect width="80" height="80" rx="12" fill="#F3E5F5"/>
+  <!-- Diagonal aesthetic lines -->
+  <line x1="0" y1="80" x2="80" y2="0" stroke="#7B1FA2" stroke-width="1" opacity="0.2"/>
+  <line x1="10" y1="80" x2="80" y2="10" stroke="#7B1FA2" stroke-width="1" opacity="0.2"/>
+  <!-- Face -->
+  <circle cx="40" cy="42" r="21" fill="#FFCCBC"/>
+  <!-- Elegant swept hair -->
+  <path d="M19 30 Q22 14 42 16 Q56 14 62 26 Q54 20 40 20 Q28 22 22 34 Z" fill="#4A148C"/>
+  <!-- Slightly raised nose (pretentious) -->
+  <ellipse cx="40" cy="44" rx="3" ry="4" fill="#FFAB91" opacity="0.5"/>
+  <!-- Elegant eyes with lashes -->
+  <ellipse cx="33" cy="40" rx="4" ry="3.5" fill="white"/>
+  <ellipse cx="47" cy="40" rx="4" ry="3.5" fill="white"/>
+  <circle cx="33" cy="40" r="2.2" fill="#4A148C"/>
+  <circle cx="47" cy="40" r="2.2" fill="#4A148C"/>
+  <!-- Thin elegant smile -->
+  <path d="M35 51 Q40 55 45 51" stroke="#AD1457" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- Bishop hat tip -->
+  <path d="M40 18 L38 10 L40 8 L42 10 Z" fill="#7B1FA2"/>
+  <circle cx="40" cy="8" r="2" fill="#CE93D8"/>
+</svg>

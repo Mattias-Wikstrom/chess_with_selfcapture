@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <rect width="80" height="80" rx="12" fill="#FFF3E0"/>
+  <!-- Body/chest puffed -->
+  <ellipse cx="40" cy="68" rx="20" ry="12" fill="#E65100"/>
+  <!-- Face -->
+  <circle cx="40" cy="40" r="22" fill="#FFCC80"/>
+  <!-- Hair - slicked back pompous -->
+  <ellipse cx="40" cy="20" rx="19" ry="10" fill="#4A2800"/>
+  <path d="M21 26 Q22 18 40 18 Q58 18 59 26" fill="#4A2800"/>
+  <!-- Eyes - confident, squinting -->
+  <ellipse cx="33" cy="39" rx="3.5" ry="2.5" fill="white"/>
+  <ellipse cx="47" cy="39" rx="3.5" ry="2.5" fill="white"/>
+  <circle cx="33" cy="39" r="1.8" fill="#1A0000"/>
+  <circle cx="47" cy="39" r="1.8" fill="#1A0000"/>
+  <!-- Bold eyebrows -->
+  <path d="M29 34 Q33 32 37 34" stroke="#4A2800" stroke-width="2.5" fill="none"/>
+  <path d="M43 34 Q47 32 51 34" stroke="#4A2800" stroke-width="2.5" fill="none"/>
+  <!-- GIANT mustache -->
+  <path d="M28 46 Q33 43 40 45 Q47 43 52 46 Q47 50 40 48 Q33 50 28 46 Z" fill="#4A2800"/>
+  <!-- Stars on chest -->
+  <text x="36" y="70" font-size="8" fill="#FFD700">★★★</text>
+</svg>

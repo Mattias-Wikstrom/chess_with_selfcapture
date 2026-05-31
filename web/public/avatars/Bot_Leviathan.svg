@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <rect width="80" height="80" rx="12" fill="#006064"/>
+  <!-- Deep ocean -->
+  <path d="M0 50 Q20 42 40 50 Q60 58 80 50 L80 80 L0 80 Z" fill="#004D40" opacity="0.8"/>
+  <path d="M0 60 Q20 54 40 60 Q60 66 80 60 L80 80 L0 80 Z" fill="#00251A" opacity="0.8"/>
+  <!-- Ancient scaled face -->
+  <ellipse cx="40" cy="36" rx="24" ry="20" fill="#00796B"/>
+  <!-- Scales texture -->
+  <path d="M20 30 Q25 26 30 30 M30 30 Q35 26 40 30 M40 30 Q45 26 50 30 M50 30 Q55 26 60 30" stroke="#004D40" stroke-width="1" fill="none" opacity="0.6"/>
+  <path d="M24 38 Q29 34 34 38 M34 38 Q39 34 44 38 M44 38 Q49 34 54 38" stroke="#004D40" stroke-width="1" fill="none" opacity="0.6"/>
+  <!-- Ancient eyes - deep sea bioluminescent -->
+  <circle cx="32" cy="34" r="5" fill="#001F1A"/>
+  <circle cx="48" cy="34" r="5" fill="#001F1A"/>
+  <circle cx="32" cy="34" r="3" fill="#00BFA5"/>
+  <circle cx="48" cy="34" r="3" fill="#00BFA5"/>
+  <!-- Vast mouth -->
+  <path d="M26 46 Q40 54 54 46" stroke="#004D40" stroke-width="2" fill="none"/>
+  <!-- Tentacle wisps -->
+  <path d="M16 50 Q10 44 8 36 Q12 42 16 40" stroke="#00796B" stroke-width="1.5" fill="none"/>
+  <path d="M64 50 Q70 44 72 36 Q68 42 64 40" stroke="#00796B" stroke-width="1.5" fill="none"/>
+</svg>

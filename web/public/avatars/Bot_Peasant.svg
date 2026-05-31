@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <rect width="80" height="80" rx="12" fill="#E8F5E9"/>
+  <!-- Straw hat brim -->
+  <ellipse cx="40" cy="24" rx="26" ry="6" fill="#D4B44A"/>
+  <!-- Hat top -->
+  <ellipse cx="40" cy="20" rx="16" ry="8" fill="#C8A835"/>
+  <ellipse cx="40" cy="14" rx="14" ry="6" fill="#C8A835"/>
+  <!-- Face -->
+  <circle cx="40" cy="45" r="20" fill="#FFCC80"/>
+  <!-- Simple eyes -->
+  <circle cx="33" cy="44" r="3" fill="white"/>
+  <circle cx="47" cy="44" r="3" fill="white"/>
+  <circle cx="33" cy="44" r="1.8" fill="#3E2723"/>
+  <circle cx="47" cy="44" r="1.8" fill="#3E2723"/>
+  <!-- Plain eyebrows -->
+  <line x1="30" y1="39" x2="36" y2="39" stroke="#795548" stroke-width="1.5"/>
+  <line x1="44" y1="39" x2="50" y2="39" stroke="#795548" stroke-width="1.5"/>
+  <!-- Honest smile -->
+  <path d="M34 52 Q40 57 46 52" stroke="#A0522D" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Pawn on hat -->
+  <circle cx="40" cy="14" r="3" fill="#8B6914"/>
+  <rect x="38.5" y="16" width="3" height="4" rx="0.5" fill="#8B6914"/>
+</svg>

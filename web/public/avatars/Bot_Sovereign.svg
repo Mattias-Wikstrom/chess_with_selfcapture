@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <rect width="80" height="80" rx="12" fill="#B71C1C"/>
+  <!-- Royal background -->
+  <rect x="0" y="0" width="80" height="80" rx="12" fill="#7B1FA2" opacity="0.3"/>
+  <!-- Robe/ermine collar -->
+  <path d="M10 68 Q20 52 40 54 Q60 52 70 68 L80 80 L0 80 Z" fill="#F5F5F5"/>
+  <circle cx="22" cy="64" r="3" fill="#1A1A1A"/>
+  <circle cx="32" cy="60" r="3" fill="#1A1A1A"/>
+  <circle cx="42" cy="58" r="3" fill="#1A1A1A"/>
+  <circle cx="52" cy="60" r="3" fill="#1A1A1A"/>
+  <circle cx="62" cy="64" r="3" fill="#1A1A1A"/>
+  <!-- Face - regal -->
+  <circle cx="40" cy="42" r="20" fill="#FFCCBC"/>
+  <!-- Imperial crown -->
+  <rect x="22" y="22" width="36" height="12" rx="2" fill="#FFD700"/>
+  <path d="M22 22 L26 14 L32 22 L40 10 L48 22 L54 14 L58 22 Z" fill="#FFD700"/>
+  <circle cx="26" cy="14" r="2.5" fill="#F44336"/>
+  <circle cx="40" cy="10" r="3" fill="#2196F3"/>
+  <circle cx="54" cy="14" r="2.5" fill="#4CAF50"/>
+  <!-- Imperious eyes -->
+  <ellipse cx="33" cy="43" rx="4" ry="3" fill="white"/>
+  <ellipse cx="47" cy="43" rx="4" ry="3" fill="white"/>
+  <circle cx="33" cy="43" r="2.2" fill="#1A0000"/>
+  <circle cx="47" cy="43" r="2.2" fill="#1A0000"/>
+  <!-- Commanding expression - firm thin mouth -->
+  <line x1="33" y1="52" x2="47" y2="52" stroke="#8D6E63" stroke-width="1.8" stroke-linecap="round"/>
+</svg>

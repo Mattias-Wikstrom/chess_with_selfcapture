@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <rect width="80" height="80" rx="12" fill="#EFEBE9"/>
+  <!-- Skewer line through background -->
+  <line x1="4" y1="40" x2="76" y2="40" stroke="#BF360C" stroke-width="2" opacity="0.3"/>
+  <polygon points="76,40 70,37 70,43" fill="#BF360C" opacity="0.3"/>
+  <!-- Face -->
+  <circle cx="40" cy="40" r="22" fill="#FFCCBC"/>
+  <!-- Cool hairstyle - side swept -->
+  <path d="M18 28 Q22 14 40 16 Q52 14 60 22 Q55 18 40 20 Q28 20 22 32 Z" fill="#37474F"/>
+  <!-- Cool eyes - slightly narrow -->
+  <ellipse cx="33" cy="40" rx="4" ry="2.8" fill="white"/>
+  <ellipse cx="47" cy="40" rx="4" ry="2.8" fill="white"/>
+  <ellipse cx="33" cy="40" rx="2.5" ry="2" fill="#263238"/>
+  <ellipse cx="47" cy="40" rx="2.5" ry="2" fill="#263238"/>
+  <!-- Direct, straight mouth -->
+  <line x1="34" y1="50" x2="46" y2="50" stroke="#795548" stroke-width="2" stroke-linecap="round"/>
+  <!-- Sharp eyebrows -->
+  <path d="M29 35 L37 33" stroke="#37474F" stroke-width="2" stroke-linecap="round"/>
+  <path d="M43 33 L51 35" stroke="#37474F" stroke-width="2" stroke-linecap="round"/>
+</svg>

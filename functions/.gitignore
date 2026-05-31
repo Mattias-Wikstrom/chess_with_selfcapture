@@ -1,0 +1,5 @@
+node_modules/
+lib/
+stockfish.js
+stockfish.wasm
+stockfish.worker.js

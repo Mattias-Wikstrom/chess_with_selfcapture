@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <rect width="80" height="80" rx="12" fill="#E3F2FD"/>
+  <!-- Geometric head shape -->
+  <rect x="18" y="18" width="44" height="44" rx="6" fill="#1565C0" opacity="0.15"/>
+  <circle cx="40" cy="40" r="22" fill="#FFCC80"/>
+  <!-- Knight fork arrows decoration -->
+  <path d="M8 40 L18 35 L18 38 L24 38 L18 42 L18 45 Z" fill="#1565C0" opacity="0.6"/>
+  <path d="M72 40 L62 35 L62 38 L56 38 L62 42 L62 45 Z" fill="#1565C0" opacity="0.6"/>
+  <!-- Eyes - precise, analytical -->
+  <rect x="29" y="37" width="8" height="6" rx="3" fill="white"/>
+  <rect x="43" y="37" width="8" height="6" rx="3" fill="white"/>
+  <circle cx="33" cy="40" r="2.2" fill="#0D47A1"/>
+  <circle cx="47" cy="40" r="2.2" fill="#0D47A1"/>
+  <!-- Amused thin line mouth -->
+  <path d="M34 50 Q40 53 46 50" stroke="#5D4037" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- Fork symbol at top -->
+  <path d="M38 8 L38 16 M40 8 L40 16 M42 8 L42 16 M38 16 Q40 20 42 16" stroke="#1565C0" stroke-width="1.5" fill="none"/>
+</svg>

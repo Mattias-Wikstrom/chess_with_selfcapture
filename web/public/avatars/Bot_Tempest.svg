@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <rect width="80" height="80" rx="12" fill="#1A237E"/>
+  <!-- Storm swirls -->
+  <path d="M40 5 Q70 20 70 40 Q70 65 40 75 Q10 65 10 40 Q10 20 40 5 Z" fill="#283593" opacity="0.6"/>
+  <!-- Lightning -->
+  <path d="M12 10 L20 30 L14 30 L24 55" stroke="#FFF176" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M68 15 L60 32 L66 32 L55 58" stroke="#FFF176" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+  <!-- Face - intense -->
+  <circle cx="40" cy="42" r="20" fill="#FFCC80"/>
+  <!-- Storm cloud hair -->
+  <path d="M20 34 Q22 16 40 18 Q58 16 60 34 Q54 22 40 22 Q26 22 20 34 Z" fill="#1A237E"/>
+  <!-- Fierce eyes -->
+  <ellipse cx="33" cy="41" rx="4" ry="3.5" fill="white"/>
+  <ellipse cx="47" cy="41" rx="4" ry="3.5" fill="white"/>
+  <circle cx="33" cy="41" r="2.5" fill="#1A237E"/>
+  <circle cx="47" cy="41" r="2.5" fill="#1A237E"/>
+  <circle cx="34" cy="40" r="0.7" fill="white"/>
+  <circle cx="48" cy="40" r="0.7" fill="white"/>
+  <!-- Determined frown -->
+  <path d="M34 51 Q40 49 46 51" stroke="#5D4037" stroke-width="2" fill="none"/>
+  <!-- Furrowed brows -->
+  <path d="M29 36 Q33 33 37 36" stroke="#1A237E" stroke-width="2.5" fill="none"/>
+  <path d="M43 36 Q47 33 51 36" stroke="#1A237E" stroke-width="2.5" fill="none"/>
+</svg>
